@@ -3,32 +3,37 @@ const state = {
 };
 
 const uploadForm = document.getElementById("upload-form");
+const firewallForm = document.getElementById("firewall-form");
+const historyFilterForm = document.getElementById("history-filter-form");
 const pcapFileInput = document.getElementById("pcap-file");
+const firewallFileInput = document.getElementById("firewall-file");
 const interfaceSelect = document.getElementById("interface-select");
 const feedback = document.getElementById("feedback");
 const liveIndicator = document.getElementById("live-indicator");
 const sourceLabel = document.getElementById("source-label");
 const recordsBody = document.getElementById("records-body");
 const notesList = document.getElementById("notes-list");
+const sessionList = document.getElementById("session-list");
+const browserActivityList = document.getElementById("browser-activity-list");
+const trendChart = document.getElementById("trend-chart");
 
 document.getElementById("refresh-interfaces").addEventListener("click", loadInterfaces);
 document.getElementById("start-live").addEventListener("click", startLiveCapture);
 document.getElementById("stop-live").addEventListener("click", stopLiveCapture);
+document.getElementById("load-latest-history").addEventListener("click", loadLatestHistory);
 uploadForm.addEventListener("submit", submitUpload);
+firewallForm.addEventListener("submit", uploadFirewallLog);
+historyFilterForm.addEventListener("submit", applyHistoryFilters);
 
 window.addEventListener("load", async () => {
     await loadInterfaces();
     await refreshLiveStatus();
+    await Promise.all([loadSessions(), loadBrowserActivity(), loadTrends(), loadLatestHistory()]);
 });
 
 async function loadInterfaces() {
     try {
-        const response = await fetch("/api/interfaces");
-        if (!response.ok) {
-            throw new Error(await response.text());
-        }
-
-        const interfaces = await response.json();
+        const interfaces = await fetchJson("/api/interfaces");
         interfaceSelect.innerHTML = "";
 
         if (!interfaces.length) {
@@ -43,7 +48,6 @@ async function loadInterfaces() {
             option.textContent = `${item.name}${item.description ? ` - ${item.description}` : ""}${addresses}`;
             interfaceSelect.appendChild(option);
         });
-        showFeedback("Network interfaces refreshed.", "success");
     } catch (error) {
         showFeedback(error.message, "error");
     }
@@ -51,7 +55,6 @@ async function loadInterfaces() {
 
 async function submitUpload(event) {
     event.preventDefault();
-
     if (!pcapFileInput.files.length) {
         showFeedback("Please choose a PCAP file first.", "error");
         return;
@@ -62,18 +65,30 @@ async function submitUpload(event) {
 
     try {
         showFeedback("Analyzing uploaded capture...", "success");
-        const response = await fetch("/api/upload", {
-            method: "POST",
-            body: formData
-        });
-
-        if (!response.ok) {
-            throw new Error(await response.text());
-        }
-
-        const snapshot = await response.json();
+        const snapshot = await fetchMultipart("/api/upload", formData);
         renderSnapshot(snapshot);
-        showFeedback("PCAP analysis completed successfully.", "success");
+        await loadSessions();
+        await loadTrends();
+        showFeedback("PCAP analysis completed and saved to history.", "success");
+    } catch (error) {
+        showFeedback(error.message, "error");
+    }
+}
+
+async function uploadFirewallLog(event) {
+    event.preventDefault();
+    if (!firewallFileInput.files.length) {
+        showFeedback("Choose a firewall log file to import.", "error");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", firewallFileInput.files[0]);
+
+    try {
+        const message = await fetchMultipart("/api/history/firewall/upload", formData, false);
+        showFeedback(message, "success");
+        await loadLatestHistory();
     } catch (error) {
         showFeedback(error.message, "error");
     }
@@ -86,19 +101,11 @@ async function startLiveCapture() {
     }
 
     try {
-        const response = await fetch("/api/live/start", {
+        const snapshot = await fetchJson("/api/live/start", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ interfaceName: interfaceSelect.value })
         });
-
-        if (!response.ok) {
-            throw new Error(await response.text());
-        }
-
-        const snapshot = await response.json();
         renderSnapshot(snapshot);
         ensurePolling();
         showFeedback("Live capture started.", "success");
@@ -109,15 +116,12 @@ async function startLiveCapture() {
 
 async function stopLiveCapture() {
     try {
-        const response = await fetch("/api/live/stop", { method: "POST" });
-        if (!response.ok) {
-            throw new Error(await response.text());
-        }
-
-        const snapshot = await response.json();
+        const snapshot = await fetchJson("/api/live/stop", { method: "POST" });
         renderSnapshot(snapshot);
         stopPollingIfIdle(snapshot);
-        showFeedback("Live capture stopped.", "success");
+        await loadSessions();
+        await loadTrends();
+        showFeedback("Live capture stopped and session history saved.", "success");
     } catch (error) {
         showFeedback(error.message, "error");
     }
@@ -125,15 +129,85 @@ async function stopLiveCapture() {
 
 async function refreshLiveStatus() {
     try {
-        const response = await fetch("/api/live/status");
-        if (!response.ok) {
-            throw new Error(await response.text());
-        }
-        const snapshot = await response.json();
+        const snapshot = await fetchJson("/api/live/status");
         renderSnapshot(snapshot);
         if (snapshot.liveRunning) {
             ensurePolling();
         }
+    } catch (error) {
+        showFeedback(error.message, "error");
+    }
+}
+
+async function applyHistoryFilters(event) {
+    event.preventDefault();
+    const params = new URLSearchParams({
+        ip: document.getElementById("filter-ip").value,
+        protocol: document.getElementById("filter-protocol").value,
+        decision: document.getElementById("filter-decision").value,
+        host: document.getElementById("filter-host").value,
+        service: document.getElementById("filter-service").value,
+        limit: "200"
+    });
+
+    try {
+        const records = await fetchJson(`/api/history/records?${params.toString()}`);
+        renderRecords(records);
+        showFeedback(`Loaded ${records.length} filtered history records.`, "success");
+    } catch (error) {
+        showFeedback(error.message, "error");
+    }
+}
+
+async function loadLatestHistory() {
+    try {
+        const records = await fetchJson("/api/history/records?limit=100");
+        renderRecords(records);
+    } catch (error) {
+        showFeedback(error.message, "error");
+    }
+}
+
+async function loadSessions() {
+    try {
+        const sessions = await fetchJson("/api/history/sessions");
+        sessionList.innerHTML = "";
+        if (!sessions.length) {
+            sessionList.innerHTML = "<li>No sessions saved yet.</li>";
+            return;
+        }
+        sessions.forEach((session) => {
+            const item = document.createElement("li");
+            item.innerHTML = `<strong>${session.sessionType}</strong> | ${session.sourceName} | ${session.packetCount || 0} packets`;
+            sessionList.appendChild(item);
+        });
+    } catch (error) {
+        showFeedback(error.message, "error");
+    }
+}
+
+async function loadBrowserActivity() {
+    try {
+        const activities = await fetchJson("/api/history/browser-activity");
+        browserActivityList.innerHTML = "";
+        if (!activities.length) {
+            browserActivityList.innerHTML = "<li>No browser activity captured yet.</li>";
+            return;
+        }
+        activities.forEach((activity) => {
+            const item = document.createElement("li");
+            item.innerHTML = `<strong>${activity.serviceName || activity.browserName}</strong> | ${activity.pageTitle} <span class="muted-inline">${activity.hostname || ""}</span>`;
+            browserActivityList.appendChild(item);
+        });
+    } catch (error) {
+        showFeedback(error.message, "error");
+    }
+}
+
+async function loadTrends() {
+    try {
+        const points = await fetchJson("/api/history/trends?minutes=180");
+        renderTrendChart(points);
     } catch (error) {
         showFeedback(error.message, "error");
     }
@@ -145,11 +219,7 @@ function ensurePolling() {
     }
     state.livePollingHandle = setInterval(async () => {
         try {
-            const response = await fetch("/api/live/status");
-            if (!response.ok) {
-                throw new Error(await response.text());
-            }
-            const snapshot = await response.json();
+            const snapshot = await fetchJson("/api/live/status");
             renderSnapshot(snapshot);
             stopPollingIfIdle(snapshot);
         } catch (error) {
@@ -227,6 +297,28 @@ function renderRecords(records) {
     });
 }
 
+function renderTrendChart(points) {
+    trendChart.innerHTML = "";
+    if (!points.length) {
+        trendChart.innerHTML = '<p class="empty-state">No persisted trend data yet.</p>';
+        return;
+    }
+
+    const maxValue = Math.max(...points.map((point) => point.totalPackets || 0), 1);
+    points.slice(-18).forEach((point) => {
+        const bar = document.createElement("div");
+        bar.className = "trend-bar";
+        bar.innerHTML = `
+            <span>${point.bucketLabel}</span>
+            <div class="trend-bar-track">
+                <div class="trend-bar-fill" style="width:${Math.max(8, ((point.totalPackets || 0) / maxValue) * 100)}%"></div>
+            </div>
+            <strong>${point.totalPackets || 0}</strong>
+        `;
+        trendChart.appendChild(bar);
+    });
+}
+
 function updateStat(id, value) {
     document.getElementById(id).textContent = value ?? 0;
 }
@@ -253,6 +345,25 @@ function decisionClass(decision) {
         return "decision-blocked";
     }
     return "decision-review";
+}
+
+async function fetchJson(url, options = {}) {
+    const response = await fetch(url, options);
+    if (!response.ok) {
+        throw new Error(await response.text());
+    }
+    return response.json();
+}
+
+async function fetchMultipart(url, formData, expectJson = true) {
+    const response = await fetch(url, {
+        method: "POST",
+        body: formData
+    });
+    if (!response.ok) {
+        throw new Error(await response.text());
+    }
+    return expectJson ? response.json() : response.text();
 }
 
 function showFeedback(message, type) {

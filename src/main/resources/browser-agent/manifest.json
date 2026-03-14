@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "DataPacketInspection Browser Agent",
+  "version": "1.0.0",
+  "description": "Sends active-tab titles and URLs to the DataPacketInspection backend.",
+  "permissions": ["tabs", "activeTab", "storage"],
+  "host_permissions": ["http://localhost:8080/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  }
+}

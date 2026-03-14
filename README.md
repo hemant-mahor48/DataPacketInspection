@@ -1,217 +1,188 @@
 # DataPacketInspection
 
-DataPacketInspection is a Java Spring Boot web application that helps inspect network traffic in two ways:
+DataPacketInspection is a Spring Boot network-inspection platform that now supports:
 
-1. Upload a `.pcap` or `.pcapng` file and review packet-level details.
-2. Start a live background capture from a selected network interface and inspect current system traffic in near real time.
+- offline PCAP upload analysis
+- real-time packet capture
+- persistent history storage
+- filtering by IP, protocol, decision, host, and service
+- trend charts from stored packet history
+- firewall-log correlation for stronger blocked-request detection
+- browser-agent integration for exact page titles and active-tab URLs
+- authentication and role-based access
 
-The dashboard is built to be simple to use and focuses on:
+## What was added
 
-- Sender IP and receiver IP
-- Protocol and port information
-- Application hints such as HTTP, HTTPS, DNS, SSH, and more
-- Detected hostnames from DNS, HTTP, and TLS metadata when available
-- Friendly service labels such as YouTube, Instagram, Facebook/Meta, Google, and more
-- Allowed, blocked, and review-required traffic classifications
-- Reasons behind each classification
-- Summary cards for total, TCP, UDP, ICMP, DNS, HTTP, and HTTPS traffic
+### Persistent storage
 
-## Features
+The app now stores:
 
-### 1. Offline PCAP upload analysis
+- uploaded capture sessions
+- live capture sessions
+- packet events for each session
+- imported firewall log entries
+- browser activity events
 
-- Upload `.pcap` or `.pcapng` files from the dashboard
-- Parse packets with `pcap4j`
-- Display the latest packet events in a visual table
-- Show packet classification reasons, such as:
-  - TCP reset detected
-  - ICMP destination unreachable observed
-  - Destination port matches a deny list
-  - Traffic appears allowed from observed protocol state
-- Detect hostnames from:
-  - DNS question names
-  - HTTP `Host` headers
-  - TLS SNI from client hello packets
+By default, the app uses a file-based H2 database for easy local startup.
+For production-style persistence, PostgreSQL and MySQL profiles are included.
 
-### 2. Real-time packet inspection
+Files:
+- [application.properties](/H:/DataPacketInspection/src/main/resources/application.properties)
+- [application-postgres.properties](/H:/DataPacketInspection/src/main/resources/application-postgres.properties)
+- [application-mysql.properties](/H:/DataPacketInspection/src/main/resources/application-mysql.properties)
 
-- Discover available local capture interfaces
-- Start live capture from the dashboard
-- Continuously refresh the latest in-memory packet view
-- See current internet activity while the app runs in the background
-- Surface service/domain clues like `youtube.com`, `googlevideo.com`, or `instagram.com` when packet metadata exposes them
+### Search and analytics
 
-### 3. Dashboard UI
+The dashboard now includes:
 
-- Responsive single-page dashboard using Thymeleaf, CSS, and vanilla JavaScript
-- Overview cards for traffic counts
-- Separate actions for upload analysis and live inspection
-- Notes panel for operational guidance and capture limitations
-- Packet table columns for detected host, host source, and service label
+- history filters for IP, protocol, decision, host, and service
+- saved capture sessions
+- traffic trend bars from persisted history
+- recent browser activity view
 
-## Important behavior note
+### Firewall log integration
 
-Raw packet captures do not always explicitly label traffic as "blocked" or "allowed".
+You can upload Windows Firewall log files and the backend will parse `DROP` entries.
+Those events are used to improve blocked-request classification when packet traffic matches the imported firewall evidence.
 
-Because of that, this project uses observable signals and policy rules to infer decisions:
+### Browser agent
 
-- `BLOCKED`
-  - TCP reset packets
-  - ICMP/ICMPv6 unreachable responses
-  - Traffic targeting ports in the local deny list: `23, 69, 135, 137, 138, 139, 445, 3389`
-- `ALLOWED`
-  - Standard TCP or UDP traffic with no visible deny signal
-- `REVIEW`
-  - Non-IP or unsupported packet types
-  - System-level live capture interruption records
+A Chrome-compatible extension scaffold is included in:
 
-You can easily extend this logic in [PacketInspectionService.java](/H:/DataPacketInspection/src/main/java/com/datapacketinspection/service/PacketInspectionService.java) to match your own business or security rules.
+- [manifest.json](/H:/DataPacketInspection/src/main/resources/browser-agent/manifest.json)
+- [background.js](/H:/DataPacketInspection/src/main/resources/browser-agent/background.js)
+- [popup.html](/H:/DataPacketInspection/src/main/resources/browser-agent/popup.html)
 
-## Tech stack
+It sends:
 
-- Java 17+
-- Spring Boot 3
-- Thymeleaf
-- Maven
-- pcap4j
+- page title
+- page URL
+- browser name
+- tab and window identifiers
 
-## Project structure
+To the backend endpoint:
 
-```text
-src
-+-- main
-¦   +-- java/com/datapacketinspection
-¦   ¦   +-- config
-¦   ¦   +-- controller
-¦   ¦   +-- dto
-¦   ¦   +-- model
-¦   ¦   +-- service
-¦   +-- resources
-¦       +-- static/css
-¦       +-- static/js
-¦       +-- templates
-+-- test
-```
+- `POST /api/browser-agent/activity`
 
-## Prerequisites
+using the header:
 
-### Java and Maven
+- `X-Agent-Token`
 
-- Install Java 17 or later
-- Install Maven 3.9+ or use your IDE Maven support
+Default token:
 
-### Packet capture driver for Windows
+- `browser-agent-demo-token`
 
-To inspect live traffic on Windows, install **Npcap** or another WinPcap-compatible driver.
+Change it with:
 
-Without that driver:
+- `AGENT_TOKEN`
 
-- PCAP upload analysis can still work
-- Live capture will not start successfully
+### Authentication and roles
 
-Administrator privileges may also be required to capture traffic from some interfaces.
+Spring Security is enabled with role-based access.
 
-## How to run
+Default demo users:
 
-### 1. Build the application
+- `admin / admin123` -> roles `ADMIN`, `ANALYST`
+- `analyst / analyst123` -> role `ANALYST`
 
-```bash
-mvn clean package
-```
+Access model:
 
-### 2. Start the application
+- dashboard and packet APIs require `ANALYST`
+- firewall-log upload requires `ADMIN`
+- browser-agent ingestion uses the shared agent token instead of user login
+
+Security config:
+
+- [SecurityConfig.java](/H:/DataPacketInspection/src/main/java/com/datapacketinspection/config/SecurityConfig.java)
+
+## Main backend components
+
+- packet parsing and domain/service inference: [PacketInspectionService.java](/H:/DataPacketInspection/src/main/java/com/datapacketinspection/service/PacketInspectionService.java)
+- live capture and live-session persistence: [LiveCaptureService.java](/H:/DataPacketInspection/src/main/java/com/datapacketinspection/service/LiveCaptureService.java)
+- persisted history, filters, and trend building: [HistoryService.java](/H:/DataPacketInspection/src/main/java/com/datapacketinspection/service/HistoryService.java)
+- firewall log import and correlation: [FirewallLogService.java](/H:/DataPacketInspection/src/main/java/com/datapacketinspection/service/FirewallLogService.java)
+- browser activity ingestion: [BrowserActivityService.java](/H:/DataPacketInspection/src/main/java/com/datapacketinspection/service/BrowserActivityService.java)
+
+## Dashboard files
+
+- UI template: [dashboard.html](/H:/DataPacketInspection/src/main/resources/templates/dashboard.html)
+- frontend logic: [app.js](/H:/DataPacketInspection/src/main/resources/static/js/app.js)
+- styling: [app.css](/H:/DataPacketInspection/src/main/resources/static/css/app.css)
+
+## Running with the default local database
 
 ```bash
 mvn spring-boot:run
 ```
 
-Or run the packaged jar:
+Then open:
+
+- [http://localhost:8080](http://localhost:8080)
+
+### H2 console
+
+- [http://localhost:8080/h2-console](http://localhost:8080/h2-console)
+
+Default JDBC URL:
+
+```text
+jdbc:h2:file:./data/datapacketinspection;MODE=PostgreSQL;AUTO_SERVER=TRUE
+```
+
+## Running with PostgreSQL
 
 ```bash
-java -jar target/DataPacketInspection-0.0.1-SNAPSHOT.jar
+mvn spring-boot:run -Dspring-boot.run.profiles=postgres
 ```
 
-### 3. Open the dashboard
+Or set:
 
-Visit:
+- `DATABASE_URL`
+- `DATABASE_USERNAME`
+- `DATABASE_PASSWORD`
 
-[http://localhost:8080](http://localhost:8080)
+## Running with MySQL
 
-## How to use
-
-### Offline PCAP mode
-
-1. Open the dashboard.
-2. In the `Offline PCAP Analysis` section, choose a `.pcap` or `.pcapng` file.
-3. Click `Analyze Uploaded Capture`.
-4. Review summary cards, notes, and the packet event table.
-
-### Live capture mode
-
-1. Open the dashboard.
-2. Click `Refresh Interfaces`.
-3. Select the interface that carries your internet traffic.
-4. Click `Start Live Capture`.
-5. Use the internet normally, for example YouTube, Instagram, Facebook, or any web application.
-6. Watch the dashboard update every few seconds.
-7. Click `Stop` when finished.
-
-## API endpoints
-
-| Method | Endpoint | Description |
-|---|---|---|
-| `POST` | `/api/upload` | Upload and inspect a PCAP file |
-| `GET` | `/api/interfaces` | List available network interfaces |
-| `POST` | `/api/live/start` | Start live capture on the selected interface |
-| `POST` | `/api/live/stop` | Stop live capture |
-| `GET` | `/api/live/status` | Get the latest live snapshot |
-
-### Example live start request
-
-```json
-POST /api/live/start
-Content-Type: application/json
-
-{
-  "interfaceName": "\\Device\\NPF_{YOUR-INTERFACE-ID}"
-}
+```bash
+mvn spring-boot:run -Dspring-boot.run.profiles=mysql
 ```
+
+Or set:
+
+- `DATABASE_URL`
+- `DATABASE_USERNAME`
+- `DATABASE_PASSWORD`
+
+## API overview
+
+### Core traffic APIs
+
+- `POST /api/upload`
+- `GET /api/interfaces`
+- `POST /api/live/start`
+- `POST /api/live/stop`
+- `GET /api/live/status`
+
+### History APIs
+
+- `GET /api/history/sessions`
+- `GET /api/history/records`
+- `GET /api/history/trends`
+- `GET /api/history/browser-activity`
+- `GET /api/history/firewall-events`
+- `POST /api/history/firewall/upload`
+
+### Browser agent API
+
+- `POST /api/browser-agent/activity`
 
 ## Current limitations
 
-- The dashboard detects domains only when the packet payload exposes them through DNS, HTTP, or TLS SNI.
-- HTTPS traffic is usually visible only as encrypted transport metadata, not full page content.
-- Website names such as YouTube or Instagram can often be inferred, but exact actions like the specific YouTube video usually cannot be recovered from packets alone.
-- QUIC and some newer protocols encrypt hostname signals more aggressively, so domain detection can be incomplete.
-- Live capture stores only a recent in-memory window of traffic for dashboard responsiveness.
-- Advanced firewall verdicts require integration with OS firewall logs or security tooling.
+- Packet inspection can often identify services and domains, but not exact encrypted content.
+- Exact YouTube video names or Instagram post content still require browser-aware telemetry, which is why the browser-agent integration was added.
+- Firewall correlation is currently based on imported log matching, not deep OS event subscription.
+- Authentication is implemented with in-memory users for simplicity; a persistent user store would be a strong next step.
 
-## Recommended next improvements
+## Suggested next step
 
-If you want to take this project further, a good next phase would be:
-
-1. Add persistent storage with PostgreSQL or MySQL.
-2. Save uploaded capture history and live session history.
-3. Add filters by IP, protocol, decision, host, or service.
-4. Add charts for traffic trends.
-5. Integrate firewall logs to improve blocked-request detection.
-6. Add a browser extension or desktop agent if you want exact page titles or active-tab URLs.
-7. Add authentication and user roles.
-
-## Main files
-
-- Application entry: [DataPacketInspectionApplication.java](/H:/DataPacketInspection/src/main/java/com/datapacketinspection/DataPacketInspectionApplication.java)
-- Upload and packet parsing logic: [PacketInspectionService.java](/H:/DataPacketInspection/src/main/java/com/datapacketinspection/service/PacketInspectionService.java)
-- Live capture engine: [LiveCaptureService.java](/H:/DataPacketInspection/src/main/java/com/datapacketinspection/service/LiveCaptureService.java)
-- REST API: [PacketApiController.java](/H:/DataPacketInspection/src/main/java/com/datapacketinspection/controller/PacketApiController.java)
-- Dashboard template: [dashboard.html](/H:/DataPacketInspection/src/main/resources/templates/dashboard.html)
-
-## Notes for you
-
-This project is ready as a stronger starter implementation for your requirement. For enterprise-grade packet inspection, the next step is usually:
-
-- richer protocol decoding
-- interface-level access control
-- persistence and audit history
-- browser-aware telemetry for exact page context
-- integration with firewall and IDS/IPS signals
+The strongest follow-up would be to replace in-memory auth with database-backed users and add alerting rules on top of the stored history.

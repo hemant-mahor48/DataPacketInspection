@@ -1,0 +1,1390 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Count 13 /Kids [4 0 R 5 0 R 6 0 R 7 0 R 8 0 R 9 0 R 10 0 R 11 0 R 12 0 R 13 0 R 14 0 R 15 0 R 16 0 R] >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+4 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 17 0 R >>
+endobj
+5 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 18 0 R >>
+endobj
+6 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 19 0 R >>
+endobj
+7 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 20 0 R >>
+endobj
+8 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 21 0 R >>
+endobj
+9 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 22 0 R >>
+endobj
+10 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 23 0 R >>
+endobj
+11 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 24 0 R >>
+endobj
+12 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 25 0 R >>
+endobj
+13 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 26 0 R >>
+endobj
+14 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 27 0 R >>
+endobj
+15 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 28 0 R >>
+endobj
+16 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 29 0 R >>
+endobj
+17 0 obj
+<< /Length 2350 >>
+stream
+BT
+/F1 10 Tf
+50 760 Td
+14 TL
+(# DataPacketInspection Interview Guide) Tj
+T*
+() Tj
+T*
+(## 1. Project Overview) Tj
+T*
+() Tj
+T*
+(**Project Name:** DataPacketInspection) Tj
+T*
+() Tj
+T*
+(**What it is:**) Tj
+T*
+(DataPacketInspection is a Spring Boot based network inspection platform that helps analyze) Tj
+T*
+(internet traffic from both offline packet captures and live network activity. It combines) Tj
+T*
+(packet parsing, traffic classification, firewall correlation, browser activity integration,) Tj
+T*
+(persistent history, filtering, charting, and role-based access into a single dashboard.) Tj
+T*
+() Tj
+T*
+(**One-line interview summary:**) Tj
+T*
+(I built a full-stack network visibility platform in Java Spring Boot that can inspect uploaded) Tj
+T*
+(PCAP files, monitor live traffic, infer domains and services like YouTube or Instagram, persist) Tj
+T*
+(analysis history, correlate firewall logs, and enrich packet data with browser activity for) Tj
+T*
+(deeper user-level context.) Tj
+T*
+() Tj
+T*
+(---) Tj
+T*
+() Tj
+T*
+(## 2. Problem Statement) Tj
+T*
+() Tj
+T*
+(Traditional packet viewers are powerful for analysts, but they are often not friendly for) Tj
+T*
+(regular users or interview-demo scenarios. Raw network packets alone are also hard to interpret) Tj
+T*
+(because they mostly show low-level protocol data rather than business-friendly insights.) Tj
+T*
+() Tj
+T*
+(I wanted to build a system that answers practical questions such as:) Tj
+T*
+() Tj
+T*
+(- What traffic is my system generating?) Tj
+T*
+(- Which source and destination IPs are involved?) Tj
+T*
+(- Is the traffic allowed or blocked?) Tj
+T*
+(- Why was it blocked?) Tj
+T*
+(- Which services are being accessed, like YouTube, Instagram, or Google?) Tj
+T*
+(- Can I inspect both uploaded traffic logs and live internet traffic?) Tj
+T*
+(- Can I retain the analysis history for later search and reporting?) Tj
+T*
+(- Can I enrich network traffic with browser context to understand exact page titles or active) Tj
+T*
+(URLs?) Tj
+T*
+() Tj
+T*
+(This project was designed as a bridge between a packet analyzer, a network-monitoring) Tj
+T*
+(dashboard, and an analyst-friendly investigation tool.) Tj
+T*
+() Tj
+T*
+(---) Tj
+T*
+() Tj
+T*
+(## 3. Main Objectives) Tj
+T*
+() Tj
+T*
+(The application was designed around these major objectives:) Tj
+T*
+() Tj
+T*
+(### Objective 1: Offline packet inspection) Tj
+T*
+ET
+endstream
+endobj
+18 0 obj
+<< /Length 1693 >>
+stream
+BT
+/F1 10 Tf
+50 760 Td
+14 TL
+(Allow users to upload PCAP or PCAPNG files and inspect packet details such as:) Tj
+T*
+() Tj
+T*
+(- sender IP) Tj
+T*
+(- receiver IP) Tj
+T*
+(- source and destination ports) Tj
+T*
+(- protocol) Tj
+T*
+(- application hint) Tj
+T*
+(- detected host/domain) Tj
+T*
+(- service name) Tj
+T*
+(- allow/block/review decision) Tj
+T*
+(- reason behind the decision) Tj
+T*
+() Tj
+T*
+(### Objective 2: Real-time traffic inspection) Tj
+T*
+(Allow users to select a network interface and inspect live traffic while using the internet in) Tj
+T*
+(the background.) Tj
+T*
+() Tj
+T*
+(### Objective 3: Persistent analysis history) Tj
+T*
+(Store packet analysis results in a database so users can later:) Tj
+T*
+() Tj
+T*
+(- review past sessions) Tj
+T*
+(- search previous traffic) Tj
+T*
+(- analyze trends over time) Tj
+T*
+(- compare upload sessions and live sessions) Tj
+T*
+() Tj
+T*
+(### Objective 4: Better blocked-request detection) Tj
+T*
+(Improve block detection by combining packet-level evidence with imported Windows Firewall logs.) Tj
+T*
+() Tj
+T*
+(### Objective 5: Exact browser context) Tj
+T*
+(Extend beyond packet inspection by introducing a browser-agent integration that captures active) Tj
+T*
+(tab URLs and page titles.) Tj
+T*
+() Tj
+T*
+(### Objective 6: Product-level access control) Tj
+T*
+(Secure the application using authentication and user roles.) Tj
+T*
+() Tj
+T*
+(---) Tj
+T*
+() Tj
+T*
+(## 4. High-Level Architecture) Tj
+T*
+() Tj
+T*
+(The system has several major layers:) Tj
+T*
+() Tj
+T*
+(### 4.1 Presentation Layer) Tj
+T*
+(This is the dashboard shown in the browser.) Tj
+T*
+() Tj
+T*
+(Technology used:) Tj
+T*
+(- Thymeleaf) Tj
+T*
+(- HTML/CSS) Tj
+T*
+(- Vanilla JavaScript) Tj
+T*
+() Tj
+T*
+ET
+endstream
+endobj
+19 0 obj
+<< /Length 1574 >>
+stream
+BT
+/F1 10 Tf
+50 760 Td
+14 TL
+(Responsibilities:) Tj
+T*
+(- upload PCAP files) Tj
+T*
+(- start and stop live capture) Tj
+T*
+(- import firewall logs) Tj
+T*
+(- filter stored history) Tj
+T*
+(- display recent sessions) Tj
+T*
+(- display browser activity) Tj
+T*
+(- render trend charts) Tj
+T*
+(- show packet event tables) Tj
+T*
+() Tj
+T*
+(### 4.2 API Layer) Tj
+T*
+(The API layer exposes REST endpoints used by the UI and the browser agent.) Tj
+T*
+() Tj
+T*
+(Main controllers:) Tj
+T*
+(- `PacketApiController`) Tj
+T*
+(- `HistoryApiController`) Tj
+T*
+(- `BrowserAgentController`) Tj
+T*
+(- `GlobalExceptionHandler`) Tj
+T*
+() Tj
+T*
+(Responsibilities:) Tj
+T*
+(- receive file uploads) Tj
+T*
+(- return live status) Tj
+T*
+(- return filtered history) Tj
+T*
+(- return trend analytics) Tj
+T*
+(- accept browser-agent events) Tj
+T*
+(- handle known API failures cleanly) Tj
+T*
+() Tj
+T*
+(### 4.3 Service Layer) Tj
+T*
+(This is the core business logic of the application.) Tj
+T*
+() Tj
+T*
+(Key services:) Tj
+T*
+(- `PacketInspectionService`) Tj
+T*
+(- `LiveCaptureService`) Tj
+T*
+(- `HistoryService`) Tj
+T*
+(- `FirewallLogService`) Tj
+T*
+(- `BrowserActivityService`) Tj
+T*
+() Tj
+T*
+(Responsibilities:) Tj
+T*
+(- parse and classify packets) Tj
+T*
+(- run live packet capture in the background) Tj
+T*
+(- persist sessions and events) Tj
+T*
+(- search historical traffic) Tj
+T*
+(- aggregate trend data) Tj
+T*
+(- parse Windows Firewall logs) Tj
+T*
+(- accept browser activity and infer service names) Tj
+T*
+() Tj
+T*
+(### 4.4 Persistence Layer) Tj
+T*
+(This layer stores structured records into the database.) Tj
+T*
+ET
+endstream
+endobj
+20 0 obj
+<< /Length 1505 >>
+stream
+BT
+/F1 10 Tf
+50 760 Td
+14 TL
+() Tj
+T*
+(Technology used:) Tj
+T*
+(- Spring Data JPA) Tj
+T*
+(- Hibernate) Tj
+T*
+(- H2 by default) Tj
+T*
+(- PostgreSQL or MySQL profiles supported) Tj
+T*
+() Tj
+T*
+(Entities:) Tj
+T*
+(- `CaptureSessionEntity`) Tj
+T*
+(- `PacketEventEntity`) Tj
+T*
+(- `FirewallEventEntity`) Tj
+T*
+(- `BrowserActivityEntity`) Tj
+T*
+() Tj
+T*
+(### 4.5 Security Layer) Tj
+T*
+(This layer controls access to the system.) Tj
+T*
+() Tj
+T*
+(Technology used:) Tj
+T*
+(- Spring Security) Tj
+T*
+() Tj
+T*
+(Responsibilities:) Tj
+T*
+(- login protection) Tj
+T*
+(- role-based authorization) Tj
+T*
+(- admin-only firewall upload) Tj
+T*
+(- analyst access to dashboard and history APIs) Tj
+T*
+(- token-based browser-agent ingestion) Tj
+T*
+() Tj
+T*
+(### 4.6 External Integration Layer) Tj
+T*
+(This includes traffic sources and enrichment sources.) Tj
+T*
+() Tj
+T*
+(Integrations used:) Tj
+T*
+(- pcap4j for packet capture and packet parsing) Tj
+T*
+(- Windows Firewall log import) Tj
+T*
+(- browser extension for active tab details) Tj
+T*
+() Tj
+T*
+(---) Tj
+T*
+() Tj
+T*
+(## 5. Core Technical Flow) Tj
+T*
+() Tj
+T*
+(## 5.1 Offline PCAP analysis flow) Tj
+T*
+(1. User uploads a `.pcap` or `.pcapng` file.) Tj
+T*
+(2. `PacketApiController` receives the file.) Tj
+T*
+(3. `PacketInspectionService` opens the capture using `pcap4j`.) Tj
+T*
+(4. Each packet is parsed and converted into a `PacketRecord`.) Tj
+T*
+(5. The service extracts:) Tj
+T*
+(   - source IP) Tj
+T*
+(   - destination IP) Tj
+T*
+(   - protocol) Tj
+T*
+(   - ports) Tj
+T*
+ET
+endstream
+endobj
+21 0 obj
+<< /Length 2348 >>
+stream
+BT
+/F1 10 Tf
+50 760 Td
+14 TL
+(   - application hint) Tj
+T*
+(   - detected host) Tj
+T*
+(   - host source) Tj
+T*
+(   - service name) Tj
+T*
+(   - decision) Tj
+T*
+(   - reason) Tj
+T*
+(6. A summary snapshot is generated.) Tj
+T*
+(7. `HistoryService` stores the session and packet events into the database.) Tj
+T*
+(8. The snapshot is returned to the dashboard.) Tj
+T*
+() Tj
+T*
+(## 5.2 Live capture flow) Tj
+T*
+(1. User selects a network interface.) Tj
+T*
+(2. `LiveCaptureService` opens the interface in promiscuous mode using `pcap4j`.) Tj
+T*
+(3. Packets are read continuously in a background executor thread.) Tj
+T*
+(4. The latest packets are stored in an in-memory deque for live UI updates.) Tj
+T*
+(5. When capture stops, the in-memory records are persisted as a live capture session.) Tj
+T*
+(6. The dashboard refreshes periodically and shows the latest events.) Tj
+T*
+() Tj
+T*
+(## 5.3 History filter flow) Tj
+T*
+(1. User enters filters such as IP, protocol, decision, host, or service.) Tj
+T*
+(2. `HistoryApiController` receives the query.) Tj
+T*
+(3. `HistoryService` builds a dynamic JPA specification.) Tj
+T*
+(4. The database returns matching packet events.) Tj
+T*
+(5. The results are transformed back into `PacketRecord` objects.) Tj
+T*
+(6. The UI renders the filtered results.) Tj
+T*
+() Tj
+T*
+(## 5.4 Trend chart flow) Tj
+T*
+(1. The frontend requests trend data for a given time window.) Tj
+T*
+(2. `HistoryService` loads packet events after a given timestamp.) Tj
+T*
+(3. Events are grouped by minute.) Tj
+T*
+(4. Counts are aggregated into `TrafficTrendPoint` objects.) Tj
+T*
+(5. The dashboard renders a chart-like trend visualization.) Tj
+T*
+() Tj
+T*
+(## 5.5 Firewall log correlation flow) Tj
+T*
+(1. An admin uploads a Windows Firewall log.) Tj
+T*
+(2. `FirewallLogService` parses `DROP` events.) Tj
+T*
+(3. Each firewall event is stored in the database.) Tj
+T*
+(4. During packet inspection, the system checks whether a packet matches a firewall `DROP` log) Tj
+T*
+(entry.) Tj
+T*
+(5. If it matches, the packet decision is upgraded to `BLOCKED` and the reason reflects the) Tj
+T*
+(firewall evidence.) Tj
+T*
+() Tj
+T*
+(## 5.6 Browser-agent flow) Tj
+T*
+(1. A Chrome-compatible extension monitors active tabs.) Tj
+T*
+(2. When the active tab changes or finishes loading, it sends:) Tj
+T*
+(   - page title) Tj
+T*
+(   - page URL) Tj
+T*
+(   - tab ID) Tj
+T*
+ET
+endstream
+endobj
+22 0 obj
+<< /Length 1669 >>
+stream
+BT
+/F1 10 Tf
+50 760 Td
+14 TL
+(   - window ID) Tj
+T*
+(   - browser name) Tj
+T*
+(3. The Spring Boot backend receives the event through `/api/browser-agent/activity`.) Tj
+T*
+(4. The event is stored in the database.) Tj
+T*
+(5. The dashboard shows recent browser activity.) Tj
+T*
+() Tj
+T*
+(This solves a key limitation of packet inspection: encrypted traffic often hides the exact page) Tj
+T*
+(content, but browser telemetry can reveal the actual page title and URL.) Tj
+T*
+() Tj
+T*
+(---) Tj
+T*
+() Tj
+T*
+(## 6. Key Features Explained in Interview Language) Tj
+T*
+() Tj
+T*
+(### 6.1 Domain and service detection) Tj
+T*
+(Raw packet traffic often only provides IPs and ports. To make the output meaningful, I added a) Tj
+T*
+(detection layer that extracts hostnames from:) Tj
+T*
+() Tj
+T*
+(- DNS question names) Tj
+T*
+(- HTTP Host headers) Tj
+T*
+(- TLS SNI in client hello packets) Tj
+T*
+() Tj
+T*
+(Then I map those hostnames into service names like:) Tj
+T*
+() Tj
+T*
+(- YouTube) Tj
+T*
+(- Instagram) Tj
+T*
+(- Facebook/Meta) Tj
+T*
+(- Google) Tj
+T*
+(- GitHub) Tj
+T*
+(- LinkedIn) Tj
+T*
+() Tj
+T*
+(This makes the UI much more understandable than showing only ports and IPs.) Tj
+T*
+() Tj
+T*
+(### 6.2 Decision engine) Tj
+T*
+(The system classifies packets into three categories:) Tj
+T*
+() Tj
+T*
+(- `ALLOWED`) Tj
+T*
+(- `BLOCKED`) Tj
+T*
+(- `REVIEW`) Tj
+T*
+() Tj
+T*
+(The classification is based on:) Tj
+T*
+() Tj
+T*
+(- TCP resets) Tj
+T*
+(- ICMP unreachable packets) Tj
+T*
+(- policy-blocked ports) Tj
+T*
+(- imported firewall `DROP` evidence) Tj
+T*
+(- unsupported or ambiguous traffic being marked as `REVIEW`) Tj
+T*
+() Tj
+T*
+(This gives a simple but explainable network-decision model.) Tj
+T*
+ET
+endstream
+endobj
+23 0 obj
+<< /Length 1877 >>
+stream
+BT
+/F1 10 Tf
+50 760 Td
+14 TL
+() Tj
+T*
+(### 6.3 Persistent session history) Tj
+T*
+(Initially, the application only displayed the current analysis result. I extended it to persist) Tj
+T*
+(sessions and packet events in a relational database.) Tj
+T*
+() Tj
+T*
+(This enables:) Tj
+T*
+() Tj
+T*
+(- later investigation) Tj
+T*
+(- trend analytics) Tj
+T*
+(- filtering and search) Tj
+T*
+(- comparing upload sessions and live sessions) Tj
+T*
+() Tj
+T*
+(This makes the project feel more like a real product instead of a one-time analyzer.) Tj
+T*
+() Tj
+T*
+(### 6.4 Security and roles) Tj
+T*
+(To make the system production-oriented, I added Spring Security with two roles:) Tj
+T*
+() Tj
+T*
+(- `ADMIN`) Tj
+T*
+(- `ANALYST`) Tj
+T*
+() Tj
+T*
+(Analysts can inspect and search traffic.) Tj
+T*
+(Admins can additionally upload firewall logs.) Tj
+T*
+(Browser-agent ingestion uses a shared token instead of interactive login, because an extension) Tj
+T*
+(needs an API-based trust model.) Tj
+T*
+() Tj
+T*
+(### 6.5 Browser-aware monitoring) Tj
+T*
+(This is one of the standout features of the project.) Tj
+T*
+() Tj
+T*
+(Packet traffic alone usually cannot tell you exactly which YouTube video or which webpage the) Tj
+T*
+(user is looking at, because HTTPS encrypts the request content. To go deeper, I added a) Tj
+T*
+(browser-agent integration that captures active tab information and stores it alongside network) Tj
+T*
+(context.) Tj
+T*
+() Tj
+T*
+(This is a great interview point because it shows:) Tj
+T*
+() Tj
+T*
+(- understanding of limitations in packet analysis) Tj
+T*
+(- architectural thinking beyond the original scope) Tj
+T*
+(- practical system design to solve real-world constraints) Tj
+T*
+() Tj
+T*
+(---) Tj
+T*
+() Tj
+T*
+(## 7. Database Design) Tj
+T*
+() Tj
+T*
+(### 7.1 CaptureSessionEntity) Tj
+T*
+(Represents a top-level analysis session.) Tj
+T*
+() Tj
+T*
+(Used for:) Tj
+T*
+(- uploaded PCAP sessions) Tj
+T*
+ET
+endstream
+endobj
+24 0 obj
+<< /Length 1189 >>
+stream
+BT
+/F1 10 Tf
+50 760 Td
+14 TL
+(- live capture sessions) Tj
+T*
+(- potential future session types) Tj
+T*
+() Tj
+T*
+(Stores:) Tj
+T*
+(- session type) Tj
+T*
+(- source name) Tj
+T*
+(- file name or interface name) Tj
+T*
+(- start/end time) Tj
+T*
+(- counts for allowed/blocked/review packets) Tj
+T*
+(- notes) Tj
+T*
+(- user who created the session) Tj
+T*
+() Tj
+T*
+(### 7.2 PacketEventEntity) Tj
+T*
+(Represents an individual packet event stored under a session.) Tj
+T*
+() Tj
+T*
+(Stores:) Tj
+T*
+(- timestamp) Tj
+T*
+(- source IP) Tj
+T*
+(- destination IP) Tj
+T*
+(- ports) Tj
+T*
+(- protocol) Tj
+T*
+(- application hint) Tj
+T*
+(- detected host) Tj
+T*
+(- host source) Tj
+T*
+(- service name) Tj
+T*
+(- decision) Tj
+T*
+(- reason) Tj
+T*
+() Tj
+T*
+(### 7.3 FirewallEventEntity) Tj
+T*
+(Represents an imported Windows Firewall event.) Tj
+T*
+() Tj
+T*
+(Stores:) Tj
+T*
+(- action) Tj
+T*
+(- protocol) Tj
+T*
+(- source IP) Tj
+T*
+(- destination IP) Tj
+T*
+(- ports) Tj
+T*
+(- raw log line) Tj
+T*
+(- event time) Tj
+T*
+() Tj
+T*
+(### 7.4 BrowserActivityEntity) Tj
+T*
+(Represents activity sent by the browser agent.) Tj
+T*
+() Tj
+T*
+(Stores:) Tj
+T*
+(- browser name) Tj
+T*
+(- page title) Tj
+T*
+(- page URL) Tj
+T*
+(- hostname) Tj
+T*
+ET
+endstream
+endobj
+25 0 obj
+<< /Length 1524 >>
+stream
+BT
+/F1 10 Tf
+50 760 Td
+14 TL
+(- service name) Tj
+T*
+(- tab ID) Tj
+T*
+(- window ID) Tj
+T*
+(- timestamp) Tj
+T*
+() Tj
+T*
+(This data model supports both current features and future product expansion.) Tj
+T*
+() Tj
+T*
+(---) Tj
+T*
+() Tj
+T*
+(## 8. Security Design) Tj
+T*
+() Tj
+T*
+(### Authentication) Tj
+T*
+(Spring Security form login and basic auth are enabled.) Tj
+T*
+() Tj
+T*
+(### Roles) Tj
+T*
+(- `ANALYST`: can use dashboard and history APIs) Tj
+T*
+(- `ADMIN`: can also upload firewall logs) Tj
+T*
+() Tj
+T*
+(### Agent token) Tj
+T*
+(The browser agent uses a token in `X-Agent-Token`.) Tj
+T*
+(This keeps the extension integration simple and separate from human login sessions.) Tj
+T*
+() Tj
+T*
+(### Why this matters in interview) Tj
+T*
+(This shows that I thought not only about features but also about access control and safe) Tj
+T*
+(integration boundaries.) Tj
+T*
+() Tj
+T*
+(---) Tj
+T*
+() Tj
+T*
+(## 9. Why This Project Is Interesting) Tj
+T*
+() Tj
+T*
+(This project stands out because it is not just a CRUD app and not just a packet parser.) Tj
+T*
+(It combines multiple engineering concerns:) Tj
+T*
+() Tj
+T*
+(- networking) Tj
+T*
+(- protocol parsing) Tj
+T*
+(- live async processing) Tj
+T*
+(- backend API design) Tj
+T*
+(- frontend dashboard design) Tj
+T*
+(- persistence) Tj
+T*
+(- filtering and analytics) Tj
+T*
+(- security) Tj
+T*
+(- external integration) Tj
+T*
+(- product thinking) Tj
+T*
+() Tj
+T*
+(In interview language, this project demonstrates full-stack ownership and practical system) Tj
+T*
+(design.) Tj
+T*
+() Tj
+T*
+(---) Tj
+T*
+ET
+endstream
+endobj
+26 0 obj
+<< /Length 1888 >>
+stream
+BT
+/F1 10 Tf
+50 760 Td
+14 TL
+() Tj
+T*
+(## 10. Challenges and How I Solved Them) Tj
+T*
+() Tj
+T*
+(### Challenge 1: Encrypted traffic hides exact user activity) Tj
+T*
+(Modern traffic is mostly HTTPS, so exact content is hidden.) Tj
+T*
+() Tj
+T*
+(**Solution:**) Tj
+T*
+(I added domain/service inference from DNS, HTTP Host, and TLS SNI, and then introduced a) Tj
+T*
+(browser-agent integration to capture exact page titles and URLs.) Tj
+T*
+() Tj
+T*
+(### Challenge 2: Raw packets are hard for users to understand) Tj
+T*
+(IPs and ports are not user-friendly.) Tj
+T*
+() Tj
+T*
+(**Solution:**) Tj
+T*
+(I added application hints, service labels, reasons for decisions, saved sessions, and visual) Tj
+T*
+(summaries.) Tj
+T*
+() Tj
+T*
+(### Challenge 3: Blocked traffic is not always obvious from packets alone) Tj
+T*
+(A packet capture may not explicitly say that a request was blocked.) Tj
+T*
+() Tj
+T*
+(**Solution:**) Tj
+T*
+(I used multiple signals:) Tj
+T*
+(- TCP reset) Tj
+T*
+(- ICMP unreachable) Tj
+T*
+(- local blocked-port policy) Tj
+T*
+(- imported Windows Firewall DROP logs) Tj
+T*
+() Tj
+T*
+(### Challenge 4: Live capture should remain responsive) Tj
+T*
+(A dashboard can become slow if all captured packets are kept in memory forever.) Tj
+T*
+() Tj
+T*
+(**Solution:**) Tj
+T*
+(I used a bounded in-memory deque for the live dashboard and persisted the session after) Tj
+T*
+(stopping capture.) Tj
+T*
+() Tj
+T*
+(### Challenge 5: Need product-level features, not just technical output) Tj
+T*
+(To stand out, the project needed more than packet parsing.) Tj
+T*
+() Tj
+T*
+(**Solution:**) Tj
+T*
+(I added persistence, charting, filters, security, and browser correlation to turn it into a) Tj
+T*
+(more complete platform.) Tj
+T*
+() Tj
+T*
+(---) Tj
+T*
+() Tj
+T*
+(## 11. Tradeoffs and Design Decisions) Tj
+T*
+() Tj
+T*
+(### Why Spring Boot?) Tj
+T*
+(Because it provides a strong ecosystem for:) Tj
+T*
+(- REST APIs) Tj
+T*
+ET
+endstream
+endobj
+27 0 obj
+<< /Length 2391 >>
+stream
+BT
+/F1 10 Tf
+50 760 Td
+14 TL
+(- validation) Tj
+T*
+(- security) Tj
+T*
+(- JPA persistence) Tj
+T*
+(- production-ready backend patterns) Tj
+T*
+() Tj
+T*
+(### Why H2 by default?) Tj
+T*
+(Because it makes local testing easy.) Tj
+T*
+(PostgreSQL and MySQL support were added for production-oriented deployment.) Tj
+T*
+() Tj
+T*
+(### Why in-memory users instead of DB-backed auth?) Tj
+T*
+(Because it allowed fast integration of roles without first building a full user-management) Tj
+T*
+(module.) Tj
+T*
+(It is a deliberate simplification, and I can clearly explain how I would extend it.) Tj
+T*
+() Tj
+T*
+(### Why a browser extension?) Tj
+T*
+(Because packet inspection alone cannot reliably reveal encrypted page-level details.) Tj
+T*
+(A browser extension is a practical and honest engineering answer to that limitation.) Tj
+T*
+() Tj
+T*
+(### Why store session history?) Tj
+T*
+(Because real monitoring products need historical analysis, not just live data.) Tj
+T*
+() Tj
+T*
+(---) Tj
+T*
+() Tj
+T*
+(## 12. How to Explain the Project in an Interview) Tj
+T*
+() Tj
+T*
+(A good structure is:) Tj
+T*
+() Tj
+T*
+(### Step 1: Start with the problem) Tj
+T*
+(?I wanted to build a system that can inspect both uploaded PCAP files and live traffic, but) Tj
+T*
+(present the results in a more understandable and product-friendly way than a traditional packet) Tj
+T*
+(viewer.?) Tj
+T*
+() Tj
+T*
+(### Step 2: Explain the solution at a high level) Tj
+T*
+(?So I created a Spring Boot platform with a dashboard that parses packets, detects services and) Tj
+T*
+(domains, stores analysis history, supports filtering and charts, integrates firewall logs, and) Tj
+T*
+(even adds browser context for exact page-level visibility.?) Tj
+T*
+() Tj
+T*
+(### Step 3: Highlight the technical depth) Tj
+T*
+(?The backend uses pcap4j for packet analysis, Spring Data JPA for persistence, Spring Security) Tj
+T*
+(for access control, and a browser extension for context enrichment. I also designed a decision) Tj
+T*
+(engine for allowed/blocked/review traffic and persisted sessions for later analysis.?) Tj
+T*
+() Tj
+T*
+(### Step 4: Mention real-world constraints) Tj
+T*
+(?One important challenge was that HTTPS encrypts most web traffic, so packets alone are not) Tj
+T*
+(enough to know exact page content. I addressed that by combining network metadata with) Tj
+T*
+(browser-agent telemetry.?) Tj
+T*
+() Tj
+T*
+(### Step 5: End with future scope) Tj
+T*
+ET
+endstream
+endobj
+28 0 obj
+<< /Length 2393 >>
+stream
+BT
+/F1 10 Tf
+50 760 Td
+14 TL
+(?The next step would be database-backed user management, real-time alerting, richer anomaly) Tj
+T*
+(detection, and deeper operating-system level firewall integration.?) Tj
+T*
+() Tj
+T*
+(---) Tj
+T*
+() Tj
+T*
+(## 13. Sample Interview Answer) Tj
+T*
+() Tj
+T*
+(?If I explain my project briefly, it is a network inspection platform built with Java Spring) Tj
+T*
+(Boot. It can analyze uploaded PCAP files and also monitor live internet traffic from a selected) Tj
+T*
+(interface. I parse packets using pcap4j, extract source and destination information, infer) Tj
+T*
+(application and service names from DNS, HTTP, and TLS metadata, and classify traffic as) Tj
+T*
+(allowed, blocked, or needing review.) Tj
+T*
+() Tj
+T*
+(I extended it beyond a basic analyzer by adding persistent storage using JPA, so upload) Tj
+T*
+(sessions and live sessions are saved and searchable later. I built filters for IP, protocol,) Tj
+T*
+(decision, host, and service, and I added trend charts to visualize traffic over time. To) Tj
+T*
+(improve blocked-traffic detection, I integrated Windows Firewall log imports and correlate DROP) Tj
+T*
+(entries with packet events.) Tj
+T*
+() Tj
+T*
+(A major limitation of packet inspection is that HTTPS hides page-level content, so I also) Tj
+T*
+(designed a browser-agent integration that captures active tab titles and URLs. This lets the) Tj
+T*
+(system understand not just that the user is on YouTube, but also which page or tab is active. I) Tj
+T*
+(also secured the platform with Spring Security and role-based access so that analysts and) Tj
+T*
+(admins have different privileges.) Tj
+T*
+() Tj
+T*
+(Overall, the project demonstrates backend design, networking, persistence, security, frontend) Tj
+T*
+(dashboarding, and product thinking in one system.?) Tj
+T*
+() Tj
+T*
+(---) Tj
+T*
+() Tj
+T*
+(## 14. Future Enhancements You Can Mention) Tj
+T*
+() Tj
+T*
+(If the interviewer asks for future scope, mention:) Tj
+T*
+() Tj
+T*
+(- database-backed user management) Tj
+T*
+(- alert rules and notifications) Tj
+T*
+(- anomaly detection and threat scoring) Tj
+T*
+(- richer protocol decoding) Tj
+T*
+(- device/process correlation) Tj
+T*
+(- geolocation and ASN enrichment) Tj
+T*
+(- SIEM or SOC integrations) Tj
+T*
+(- multi-tenant SaaS architecture) Tj
+T*
+(- exportable reports and scheduled summaries) Tj
+T*
+() Tj
+T*
+(---) Tj
+T*
+() Tj
+T*
+(## 15. Final Takeaway) Tj
+T*
+() Tj
+T*
+ET
+endstream
+endobj
+29 0 obj
+<< /Length 461 >>
+stream
+BT
+/F1 10 Tf
+50 760 Td
+14 TL
+(This project is strong for interviews because it shows:) Tj
+T*
+() Tj
+T*
+(- real backend engineering) Tj
+T*
+(- networking knowledge) Tj
+T*
+(- system design thinking) Tj
+T*
+(- security awareness) Tj
+T*
+(- data modeling) Tj
+T*
+(- product-minded feature design) Tj
+T*
+(- ability to handle practical limitations honestly) Tj
+T*
+() Tj
+T*
+(It is not just a demo UI and not just a parser. It is a meaningful, extensible platform.) Tj
+T*
+ET
+endstream
+endobj
+xref
+0 30
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000195 00000 n 
+0000000265 00000 n 
+0000000392 00000 n 
+0000000519 00000 n 
+0000000646 00000 n 
+0000000773 00000 n 
+0000000900 00000 n 
+0000001027 00000 n 
+0000001155 00000 n 
+0000001283 00000 n 
+0000001411 00000 n 
+0000001539 00000 n 
+0000001667 00000 n 
+0000001795 00000 n 
+0000001923 00000 n 
+0000004326 00000 n 
+0000006072 00000 n 
+0000007699 00000 n 
+0000009257 00000 n 
+0000011658 00000 n 
+0000013380 00000 n 
+0000015310 00000 n 
+0000016552 00000 n 
+0000018129 00000 n 
+0000020070 00000 n 
+0000022514 00000 n 
+0000024960 00000 n 
+trailer
+<< /Size 30 /Root 1 0 R >>
+startxref
+25473
+%%EOF

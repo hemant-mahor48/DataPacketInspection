@@ -1,6 +1,8 @@
 package com.datapacketinspection.service;
 
+import com.datapacketinspection.entity.FirewallEventEntity;
 import com.datapacketinspection.model.AnalysisSnapshot;
+import com.datapacketinspection.model.CaptureSessionType;
 import com.datapacketinspection.model.PacketRecord;
 import com.datapacketinspection.model.PacketStats;
 import com.datapacketinspection.model.TrafficDecision;
@@ -16,6 +18,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -42,6 +45,14 @@ public class PacketInspectionService {
             "GET ", "POST ", "PUT ", "DELETE ", "PATCH ", "HEAD ", "OPTIONS ", "CONNECT ", "TRACE "
     );
 
+    private final HistoryService historyService;
+    private final FirewallLogService firewallLogService;
+
+    public PacketInspectionService(HistoryService historyService, FirewallLogService firewallLogService) {
+        this.historyService = historyService;
+        this.firewallLogService = firewallLogService;
+    }
+
     public AnalysisSnapshot inspectUploadedPcap(MultipartFile file)
             throws IOException, PcapNativeException, NotOpenException {
         if (file.isEmpty()) {
@@ -54,6 +65,7 @@ public class PacketInspectionService {
             throw new IllegalArgumentException("Only .pcap and .pcapng files are supported.");
         }
 
+        Instant startedAt = Instant.now();
         Path tempFile = Files.createTempFile("packet-upload-", "-" + filename);
         file.transferTo(tempFile);
 
@@ -73,12 +85,14 @@ public class PacketInspectionService {
             Files.deleteIfExists(tempFile);
         }
 
-        return buildSnapshot(filename, records, false, null,
+        AnalysisSnapshot snapshot = buildSnapshot(filename, records, false, null,
                 List.of(
-                        "Blocked traffic is inferred from packet evidence such as TCP resets, ICMP unreachable responses, or policy-denied ports.",
+                        "Blocked traffic is inferred from packet evidence such as TCP resets, ICMP unreachable responses, policy-denied ports, and imported firewall DROP logs.",
                         "Detected hostnames come from DNS queries, HTTP Host headers, and TLS SNI when those values are visible in the capture.",
                         "Up to " + MAX_RECORDS + " packets are loaded into the dashboard table for readability."
                 ));
+        historyService.saveSnapshot(CaptureSessionType.UPLOAD, snapshot, filename, null, startedAt, Instant.now());
+        return snapshot;
     }
 
     public PacketRecord parsePacket(Packet packet, Instant timestamp) {
@@ -127,6 +141,7 @@ public class PacketInspectionService {
                 record.setReason("TCP traffic looks permitted based on the observed handshake state.");
             }
 
+            applyFirewallCorrelation(record);
             finalizeServiceName(record);
             return record;
         }
@@ -150,6 +165,7 @@ public class PacketInspectionService {
                 record.setReason("UDP traffic was captured without an explicit deny signal.");
             }
 
+            applyFirewallCorrelation(record);
             finalizeServiceName(record);
             return record;
         }
@@ -244,6 +260,18 @@ public class PacketInspectionService {
         }
 
         return stats;
+    }
+
+    private void applyFirewallCorrelation(PacketRecord record) {
+        Optional<FirewallEventEntity> match = firewallLogService.findBlockingMatch(
+                record.getTimestamp(),
+                record.getDestinationIp(),
+                record.getDestinationPort(),
+                record.getProtocol());
+        match.ifPresent(event -> {
+            record.setDecision(TrafficDecision.BLOCKED);
+            record.setReason("Matched imported firewall DROP log for destination " + event.getDestinationIp() + ":" + event.getDestinationPort());
+        });
     }
 
     private void populateDetectedHost(PacketRecord record, String host, String source) {

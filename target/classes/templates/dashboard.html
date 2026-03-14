@@ -13,14 +13,14 @@
             <p class="eyebrow">Network Visibility Console</p>
             <h1>DataPacketInspection</h1>
             <p class="hero-copy">
-                Upload packet captures or inspect traffic in real time through a single Spring Boot dashboard.
-                The application highlights sender IPs, receiver IPs, protocol details, inferred allow or block decisions,
-                detected domains, service names, and the reason behind each classification.
+                Upload packet captures, inspect traffic in real time, correlate firewall evidence, track browser context,
+                and explore persisted history through filters and trend charts.
             </p>
         </div>
         <div class="hero-badge">
             <span id="live-indicator" class="indicator indicator-off">Live capture stopped</span>
             <p id="source-label">No analysis loaded yet</p>
+            <p class="muted-inline">Default users: <code>admin/admin123</code> and <code>analyst/analyst123</code></p>
         </div>
     </header>
 
@@ -28,7 +28,7 @@
         <section class="panel action-panel">
             <div class="panel-heading">
                 <h2>Offline PCAP Analysis</h2>
-                <p>Inspect a `.pcap` or `.pcapng` file and summarize up to 300 packets.</p>
+                <p>Inspect a `.pcap` or `.pcapng` file and persist the packet history.</p>
             </div>
             <form id="upload-form" class="stacked-form">
                 <label for="pcap-file">PCAP File</label>
@@ -53,6 +53,36 @@
             </div>
         </section>
 
+        <section class="panel action-panel">
+            <div class="panel-heading">
+                <h2>Firewall Correlation</h2>
+                <p>Upload Windows Firewall logs to enrich blocked-request detection.</p>
+            </div>
+            <form id="firewall-form" class="stacked-form">
+                <label for="firewall-file">Firewall Log</label>
+                <input id="firewall-file" name="file" type="file" accept=".log,.txt">
+                <button type="submit" class="secondary">Import Firewall Log</button>
+            </form>
+        </section>
+
+        <section class="panel action-panel">
+            <div class="panel-heading">
+                <h2>History Filters</h2>
+                <p>Search persisted traffic by IP, protocol, decision, host, or service.</p>
+            </div>
+            <form id="history-filter-form" class="stacked-form compact-grid">
+                <input id="filter-ip" type="text" placeholder="IP address">
+                <input id="filter-protocol" type="text" placeholder="Protocol (TCP/UDP)">
+                <input id="filter-decision" type="text" placeholder="Decision (ALLOWED/BLOCKED)">
+                <input id="filter-host" type="text" placeholder="Detected host">
+                <input id="filter-service" type="text" placeholder="Service name">
+                <div class="button-row">
+                    <button type="submit">Apply Filters</button>
+                    <button id="load-latest-history" type="button" class="secondary">Latest History</button>
+                </div>
+            </form>
+        </section>
+
         <section class="panel stats-panel">
             <div class="panel-heading">
                 <h2>Traffic Overview</h2>
@@ -72,6 +102,34 @@
             </div>
         </section>
 
+        <section class="panel action-panel">
+            <div class="panel-heading">
+                <h2>Traffic Trends</h2>
+                <p>Stored packet history grouped over time.</p>
+            </div>
+            <div id="trend-chart" class="trend-chart"></div>
+        </section>
+
+        <section class="panel action-panel">
+            <div class="panel-heading">
+                <h2>Browser Activity</h2>
+                <p>Recent browser-agent events for exact page titles and active-tab URLs.</p>
+            </div>
+            <ul id="browser-activity-list" class="activity-list">
+                <li>No browser activity captured yet.</li>
+            </ul>
+        </section>
+
+        <section class="panel action-panel">
+            <div class="panel-heading">
+                <h2>Capture Sessions</h2>
+                <p>Saved upload and live sessions from persistent storage.</p>
+            </div>
+            <ul id="session-list" class="activity-list">
+                <li>No sessions saved yet.</li>
+            </ul>
+        </section>
+
         <section class="panel notes-panel">
             <div class="panel-heading">
                 <h2>Analysis Notes</h2>
@@ -85,7 +143,7 @@
         <section class="panel table-panel">
             <div class="panel-heading">
                 <h2>Packet Events</h2>
-                <p>Most recent events appear first so live traffic is easy to follow.</p>
+                <p>Most recent events appear first so live traffic and saved history are easy to follow.</p>
             </div>
             <div id="feedback" class="feedback hidden"></div>
             <div class="table-wrap">

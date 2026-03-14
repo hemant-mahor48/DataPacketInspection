@@ -1,6 +1,8 @@
 package com.datapacketinspection.service;
 
+import com.datapacketinspection.entity.CaptureSessionEntity;
 import com.datapacketinspection.model.AnalysisSnapshot;
+import com.datapacketinspection.model.CaptureSessionType;
 import com.datapacketinspection.model.CaptureInterfaceInfo;
 import com.datapacketinspection.model.PacketRecord;
 import com.datapacketinspection.model.TrafficDecision;
@@ -27,6 +29,7 @@ public class LiveCaptureService {
     private static final int MAX_RECORDS = 250;
 
     private final PacketInspectionService packetInspectionService;
+    private final HistoryService historyService;
     private final ExecutorService liveCaptureExecutor;
 
     private final Object monitor = new Object();
@@ -35,9 +38,15 @@ public class LiveCaptureService {
     private volatile String activeInterfaceName;
     private volatile Future<?> captureTask;
     private volatile PcapHandle liveHandle;
+    private volatile Instant liveStartedAt;
+    private volatile Long persistedSessionId;
 
-    public LiveCaptureService(PacketInspectionService packetInspectionService, ExecutorService liveCaptureExecutor) {
+    public LiveCaptureService(
+            PacketInspectionService packetInspectionService,
+            HistoryService historyService,
+            ExecutorService liveCaptureExecutor) {
         this.packetInspectionService = packetInspectionService;
+        this.historyService = historyService;
         this.liveCaptureExecutor = liveCaptureExecutor;
     }
 
@@ -70,6 +79,8 @@ public class LiveCaptureService {
 
             recentRecords.clear();
             activeInterfaceName = interfaceName;
+            liveStartedAt = Instant.now();
+            persistedSessionId = null;
             liveHandle = networkInterface.openLive(65536, PcapNetworkInterface.PromiscuousMode.PROMISCUOUS, 10);
             liveHandle.setFilter("ip or ip6", BpfCompileMode.OPTIMIZE);
             running = true;
@@ -79,6 +90,7 @@ public class LiveCaptureService {
 
     public void stopCapture() {
         synchronized (monitor) {
+            boolean wasRunning = running;
             running = false;
             if (liveHandle != null && liveHandle.isOpen()) {
                 liveHandle.close();
@@ -87,6 +99,9 @@ public class LiveCaptureService {
             if (captureTask != null) {
                 captureTask.cancel(true);
                 captureTask = null;
+            }
+            if (wasRunning) {
+                persistLiveSession();
             }
         }
     }
@@ -100,6 +115,7 @@ public class LiveCaptureService {
         List<String> notes = new ArrayList<>();
         notes.add("Live capture requires Npcap or WinPcap-compatible drivers and may need Administrator privileges on Windows.");
         notes.add("The dashboard keeps only the latest " + MAX_RECORDS + " packets in memory to stay responsive.");
+        notes.add("When capture stops, the live session is persisted into history for filtering and charts.");
         if (running) {
             notes.add("Capture is actively listening on interface: " + activeInterfaceName + ".");
         }
@@ -140,12 +156,30 @@ public class LiveCaptureService {
         }
 
         synchronized (monitor) {
-            running = false;
+            if (running) {
+                running = false;
+                persistLiveSession();
+            }
             if (liveHandle != null && liveHandle.isOpen()) {
                 liveHandle.close();
             }
             liveHandle = null;
         }
+    }
+
+    private void persistLiveSession() {
+        if (persistedSessionId != null || recentRecords.isEmpty()) {
+            return;
+        }
+        AnalysisSnapshot snapshot = currentSnapshot();
+        CaptureSessionEntity session = historyService.saveSnapshot(
+                CaptureSessionType.LIVE,
+                snapshot,
+                null,
+                activeInterfaceName,
+                liveStartedAt,
+                Instant.now());
+        persistedSessionId = session.getId();
     }
 
     private PacketRecord errorRecord(String interfaceName, String message) {
@@ -155,6 +189,7 @@ public class LiveCaptureService {
         record.setDestinationIp("Capture Engine");
         record.setProtocol("SYSTEM");
         record.setApplicationHint("Live Capture");
+        record.setServiceName("Capture Engine");
         record.setPacketSize(0);
         record.setReason(message == null ? "Live capture stopped unexpectedly." : message);
         record.setDecision(TrafficDecision.REVIEW);
